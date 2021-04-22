@@ -19,27 +19,17 @@ augroup CursorLineOnlyInActiveWindow
     autocmd WinLeave * setlocal nocursorline
 augroup END
 
-" vim can autodetect this based on $TERM (e.g. 'xterm-256color')
-" but it can be set to force 256 colors
-" set t_Co=256
-if has('gui_running')
-    colorscheme solarized
-    let g:lightline = {'colorscheme': 'solarized'}
-elseif &t_Co < 256
-    colorscheme default
-    set nocursorline " looks bad in this mode
-else
-    set background=dark
-    let g:solarized_termcolors=256 " instead of 16 color with mapping in terminal
-    colorscheme solarized
-    " customized colors
-    highlight SignColumn ctermbg=234
-    highlight StatusLine cterm=bold ctermfg=245 ctermbg=235
-    highlight StatusLineNC cterm=bold ctermfg=245 ctermbg=235
-    let g:lightline = {'colorscheme': 'dark'}
-    highlight SpellBad cterm=underline
-    " patches
-    highlight CursorLineNr cterm=NONE
+" Enable true color
+if exists('+termguicolors')
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+  set termguicolors
+endif
+
+" color scheme
+if filereadable(expand("~/.vimrc_background"))
+    let base16colorspace=256
+    source ~/.vimrc_background
 endif
 
 " Turn on syntax highlighting.
@@ -94,6 +84,16 @@ set noerrorbells visualbell t_vb=
 " sometimes be convenient.
 set mouse+=a
 
+" Open new split panes to right and bottom, which feels more natural
+set splitbelow
+set splitright
+
+" quicker window movement
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-h> <C-w>h
+nnoremap <C-l> <C-w>l
+
 " Try to prevent bad habits like using the arrow keys for movement. This is
 " not the only possible bad habit. For example, holding down the h/j/k/l keys
 " for movement, rather than using more efficient movement commands, is also a
@@ -113,6 +113,25 @@ inoremap <Down>  <ESC>:echoe "Use j"<CR>
 " ctrlp
 let g:ctrlp_map = '<c-p>'
 
+" syntastic
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_mode_map = {
+    \ 'mode': 'passive',
+    \ 'active_filetypes': [],
+    \ 'passive_filetypes': []
+\}
+nnoremap <Leader>s :SyntasticCheck<CR>
+nnoremap <Leader>r :SyntasticReset<CR>
+nnoremap <Leader>i :SyntasticInfo<CR>
+nnoremap <Leader>m :SyntasticToggleMode<CR>
+
+" fugitive
+set tags^=.git/tags;~
+
+" lightline theme
+let g:lightline = {'colorscheme': 'material'}
 " enable file type detection
 filetype plugin indent on
 set autoindent
@@ -121,6 +140,7 @@ set listchars=tab:>>,nbsp:~
 set lbr
 set scrolloff=5 " show lines above and below cursor (when possible)
 set laststatus=2
+set noshowmode
 set timeout timeoutlen=1000 ttimeoutlen=100 " fix slow 0 inserts
 set autochdir " automatically set current directory to directory of last opened file
 set history=8192
